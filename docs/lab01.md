@@ -130,5 +130,4 @@ Les Preflight Checks sont des vérifications automatiques avant exécution. Ils 
 
 10. **IOS (MAC) : lancer l'app sur un simulateur et comparez le rendu du bouton avec un Android**
 
-Je suis sous Linux, donc je ne peux pas lancer le simulateur iOS ni comparer visuellement le rendu sur un Mac ici. En revanche, sur un environnement macOS, il faut lancer l'application sur un simulateur iPhone/iPad et comparer la mise en page du bouton avec l'app Android. En pratique, si le code UI est partagé (`commonMain`), le composant est quasiment identique, mais de petites différences peuvent apparaître en raison des variations de thème, d'espacements, de polices ou de la plateforme native.
-
+Je suis sous Linux
