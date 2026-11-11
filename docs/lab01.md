@@ -58,3 +58,77 @@
 
 
 
+## Question de fin
+
+1. **Pourquoi est-il intéressant de développer l'UI sur la cible *Desktop* même si le produit final est une app mobile ?**
+
+Développer sur Desktop permert de tester rapidement l'interface sans avoir besoin d'un émulateur Android ou d'un téléphone.
+
+Cela facilite ke débogage, accélère les tests et permet de vérifier le fonctionnement du code commun avant de passer sur mobile. 
+
+2. **Quelle différence faites-vous entre un *Hot Reload* et un redémarrage ? Quels changements ont nécesité un redémarage complet à l'étape 7 ?**
+
+- **Hot Reload** : applique rapidement certaines modifications du code sans relancer complétement l'application
+- **Redémarrage complet** : arrête et relance l'application pour prendre en compte les modifications qui nécessitent une nouvelle compilation ou une réinitialisation. 
+
+Un redémareage complet est notament nécessaire après des modifications de configuration Gradle, de dépendances ou de la structure du projet. 
+
+3. **Que se passerait-il si quelqu'un ajoute dans *shared/build.gradle.kts* un bloc *androidTarget {}* trouvé dans un tutoriel de 2023 ?**
+
+Le projet pourrait rencotrer une erreur de configuration ou de compilation. Les anciennes configuration Kotlin Multiplatforme ne correspondent pas forcément aux version récentes du plugin. Il faut utiliser la configuration adaptée à la versiuon actuelle de Kotlin et d'Android. 
+
+4. **Le texte "Hello/Bonjour depuis ..." est différent sur chaque plateforme alors que *Greeting* est un code commum. Expliquez le mécanisme**.
+
+Même si `Greeting` est écrit dasn `commonMain`, il peut utilsier du code spécifique à chaque plateforme. Kotlin multiplatform permet de définir un comportement commun et une implémentation différente en fonction de la plateforme. 
+
+5. **Le même *Greeting* est compilé en DEX (Android), en bytecode JVM (desktop) et en binaire natif (IOS). Selon vous, laquelle de ces formes est la plus facliel à analyser pour un attaquant ? Pourquoi est-ce important si l'on met à jour du code sensible dans *comminMain*?**
+
+Le *bytecide JVM* est le plus facile à analyser car il existe des outils permettant de le décompiler relativement facilement. 
+
+Le code sensible placé dans `commonMain` peut être distribué sur plusieurs plateformes. Il faut donc éviter d'y stocker des mots de passe, des clés secrètes ou des informations confidentielles. 
+
+6. **Tâches Graddle : listez les tâches liée à l'exécution : `./gradlew tasks --all | grep -i run`**
+
+Les tâches liées à l'exécution sont notamment :
+
+- `desktopApp:run`
+- `desktopApp:hotRun`
+- `desktopApp:hotDev`
+- `desktopApp:hotRunAsync`
+- `shared:jvmRun`
+- `shared:hotRunJvm`
+- `shared:hotDevJvm`
+- `desktopApp:createRuntimeImage`
+
+Elles permettent de lancer l'application, de l'exécuter en mode hot reload, ou de préparer un runtime pour la cible desktop.
+
+7. **Sorties de compilation : après un `./gradlew : shared:jvmJar` (et `:shared:copileKotlinIosSimulationArm64` sur MAC), explorer `shared/build/` . Où sont les *.class*? Trouvez-vous des fichiers ou dossiers *klib* ? A quoi correspondent-ils ?**
+
+Après le build JVM, les fichiers `.class` sont dans :
+
+- `shared/build/classes/kotlin/jvm/main/...`
+- `shared/build/classes/kotlin/android/main/...`
+
+Le jar final est produit dans :
+
+- `shared/build/libs/shared-jvm.jar`
+
+Les classes Java/Kotlin compilées correspondent au bytecode exécuté par la JVM. Les `*.klib` ne sont pas visibles après un simple `jvmJar` ; ils concernent plutôt les artefacts Kotlin/Native pour les cibles iOS/Apple. Un `.klib` est une bibliothèque Kotlin native (équivalent d'un fichier de bibliothèque compilée pour les cibles native), utilisée par le compilateur et le runtime Kotlin/Native. Sur macOS, `:shared:compileKotlinIosSimulationArm64` produit des artefacts de ce type, qui sont ensuite assemblés dans un framework ou un binaire ciblé.
+
+8. **Dépendances : affichez l'abre de dépendances runtime de la cible desktop du module partagé : `./gradlew : shared:dependencies --configuration jvmRuntimeClasspath`**
+**Quelle bibliothèuqe *skiko* apparaît ? Pourquoi**
+
+La dépendance importante qui apparaît est :
+
+- `org.jetbrains.skiko:skiko:0.150.1`
+
+Elle est pullée via les bibliothèques Compose Desktop (`org.jetbrains.compose...`) et est utilisée pour le rendu graphique. Skiko est le binding Kotlin/Compose vers Skia, la bibliothèque de dessin 2D utilisée pour afficher les fenêtres, les boutons et les composants UI sur la cible desktop. Sans Skiko, Compose Desktop ne pourrait pas rendre l'interface graphique sur JVM.
+
+9. **Preflight checks : explorer les réglages de l'outil (relance, détails)**
+
+Les Preflight Checks sont des vérifications automatiques avant exécution. Ils permettent de contrôler que le projet, le SDK, les plugins, la configuration Gradle et l'environnement local sont cohérents. Dans ce projet, cela aide à prévenir des erreurs de lancement (versions incompatibles, cibles manquantes, mauvais niveau de build, etc.). L'outil peut proposer de relancer la vérification ou afficher les détails de l'erreur pour corriger le problème de manière ciblée.
+
+10. **IOS (MAC) : lancer l'app sur un simulateur et comparez le rendu du bouton avec un Android**
+
+Je suis sous Linux, donc je ne peux pas lancer le simulateur iOS ni comparer visuellement le rendu sur un Mac ici. En revanche, sur un environnement macOS, il faut lancer l'application sur un simulateur iPhone/iPad et comparer la mise en page du bouton avec l'app Android. En pratique, si le code UI est partagé (`commonMain`), le composant est quasiment identique, mais de petites différences peuvent apparaître en raison des variations de thème, d'espacements, de polices ou de la plateforme native.
+
